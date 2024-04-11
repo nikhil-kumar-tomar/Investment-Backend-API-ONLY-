@@ -14,7 +14,6 @@ class UserSignUpView(CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         inst = None
-        print(serializer.is_valid())
         if serializer.is_valid():
             inst = User.objects.create_user(**serializer.data)
         
