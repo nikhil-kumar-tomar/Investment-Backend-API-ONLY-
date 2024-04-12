@@ -10,14 +10,19 @@ class Assets(models.Model):
     ]
     HOLDING_TYPE_CHOICES = [
         ('mutual_fund', 'mutual_fund'),
-        ('stock', 'stock')
+        ('stock', 'stock'),
+        ('etf','etf')
     ]
 
     id = models.PositiveIntegerField(primary_key=True)
-    name = models.CharField(max_length=500)
+    fetch_name = models.CharField(max_length=500, null=True)
+    show_name = models.CharField(max_length=500, null=True)
     asset_type = models.CharField(max_length=20, choices=ASSET_TYPE_CHOICES)
     holding_type = models.CharField(max_length=20, choices=HOLDING_TYPE_CHOICES)
     current_price = models.DecimalField(max_digits=10, decimal_places=5)
+
+    def __str__(self) -> str:
+        return f"{self.fetch_name} | {self.holding_type} | {self.asset_type}"
 
 class UserHoldings(models.Model):
     ACTION_CHOICES = [
