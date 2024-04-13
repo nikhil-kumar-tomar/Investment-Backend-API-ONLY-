@@ -31,6 +31,7 @@ class UpdateSpecificCurrentPrice(GenericAPIView):
         obj = Assets.objects.get(pk=kwargs["pk"])
         update_latest_price([obj])
         return Response({"Status": True, "message":"Price Updated"}, status=status.HTTP_200_OK)
+    
 class UpdateAllCurrentPrices(GenericAPIView):
     queryset = Assets.objects.all()
     def get(self, request, *args, **kwargs):
@@ -39,4 +40,25 @@ class UpdateAllCurrentPrices(GenericAPIView):
         return Response({"Status": True, "message":"Price Updated"}, status=status.HTTP_200_OK)
         
 
+class BuyAsset(CreateAPIView):
+    queryset = UserHoldings.objects.all()
+    serializer_class = BuyAssetSerializer
+    response_serializer_class = ShownBuyAssetSerializer
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data = request.data)
+        serializer.is_valid(raise_exception=True)
+
+        obj = Assets.objects.get(pk=request.data["asset"])
+
+        current_object = {
+            "action":"buy",
+            "price":obj.current_price,
+            "user":request.user,
+            "asset":obj,
+            "quantity":request.data["quantity"]
+        }
+        inst = UserHoldings.objects.create(**current_object)
+        
+        serializer =ShownBuyAssetSerializer(inst)
+        return Response(serializer.data)
 

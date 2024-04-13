@@ -35,6 +35,5 @@ class UserHoldings(models.Model):
     quantity = models.PositiveIntegerField()
     action = models.CharField(max_length=5, choices=ACTION_CHOICES)
     price = models.DecimalField(max_digits=50, decimal_places=10)
-    class meta:
-        unique_together = ['asset','user']
+
 
