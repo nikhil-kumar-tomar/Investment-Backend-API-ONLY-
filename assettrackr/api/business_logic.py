@@ -13,8 +13,6 @@ def url_builder(stock:bool, obj, latest:bool):
         else:
             return settings.MUTUAL_FUND_API + f"/mf/{obj.id}"
 
-
-
 def get_api_info(obj, latest: bool):
     if obj.holding_type == "stock":
         request_obj = requests.get(
@@ -35,9 +33,6 @@ def get_api_info(obj, latest: bool):
             )
     return request_obj.json()
         
-        
-
-
 def update_latest_price(objects: list[object]):
     for obj in objects:
         request_object = get_api_info(obj, latest=True)
@@ -52,3 +47,24 @@ def update_latest_price(objects: list[object]):
                 print(1)
                 obj.current_price = request_object["Global Quote"]["05. price"]
         obj.save()
+
+
+def order_queue(user:object, asset):
+    queue = []
+    quantity = 0
+    for holding in user.holdings.filter(asset=asset).order_by('date'):
+        if holding.action == "buy":
+            queue.append([holding, holding.quantity])
+            quantity += holding.quantity
+        else:
+            sell_quantity = holding.quantity
+            quantity -= sell_quantity
+            while sell_quantity != 0:
+                if queue[0][1] - sell_quantity <= 0:
+                    sell_quantity = abs(queue[0][1] - sell_quantity)
+                    queue.pop(0)
+                else:
+                    queue[0][1] -= sell_quantity 
+                    sell_quantity = 0
+
+    return [queue, quantity]

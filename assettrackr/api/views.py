@@ -1,17 +1,20 @@
 from django.shortcuts import render
-from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView, GenericAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView, GenericAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, ListAPIView
 from django.contrib.auth.models import User
 from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Assets
-from .business_logic import update_latest_price
+from .business_logic import update_latest_price, order_queue
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+
 
 class UserSignUpView(CreateAPIView):
     permission_classes = []
     authentication_classes = []
     queryset = User.objects.all()
-    serializer_class = CreateUserSerializer
+    serializer_class = UserSerializer
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         inst = None
@@ -21,10 +24,13 @@ class UserSignUpView(CreateAPIView):
         return Response(self.get_serializer(instance = inst).data if inst != None else {"error":serializer.errors}, 
                         status=status.HTTP_201_CREATED)
         
+class RetrieveUpdateDestroyUserView(RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 class Login(RetrieveUpdateAPIView):
     def get(self, request, *args, **kwargs):
-        return Response({"status":True}, status=status.HTTP_200_OK)
+        return Response({"status":True, "message":"successfully logged in"}, status=status.HTTP_200_OK)
 
 class UpdateSpecificCurrentPrice(GenericAPIView):
     def get(self, request, *args, **kwargs):
@@ -40,25 +46,46 @@ class UpdateAllCurrentPrices(GenericAPIView):
         return Response({"Status": True, "message":"Price Updated"}, status=status.HTTP_200_OK)
         
 
-class BuyAsset(CreateAPIView):
+class BuySellAsset(CreateAPIView):
     queryset = UserHoldings.objects.all()
-    serializer_class = BuyAssetSerializer
-    response_serializer_class = ShownBuyAssetSerializer
+    serializer_class = BuySellAssetSerializer
+    response_serializer_class = BuySellOutputAssetSerializer
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data = request.data)
         serializer.is_valid(raise_exception=True)
 
-        obj = Assets.objects.get(pk=request.data["asset"])
-
+        obj = Assets.objects.get(pk=serializer.validated_data["asset"])
+        if serializer.validated_data["action"] == "sell":
+            queue, quantity = order_queue(request.user, obj)
+            if quantity < serializer.validated_data["quantity"]:
+                return Response({"status":False,"message":"selected quantity for this asset isn't available"},
+                                status=status.HTTP_400_BAD_REQUEST
+                                )
         current_object = {
-            "action":"buy",
+            "action":serializer.validated_data["action"],
             "price":obj.current_price,
             "user":request.user,
             "asset":obj,
-            "quantity":request.data["quantity"]
+            "quantity":serializer.validated_data["quantity"]
         }
         inst = UserHoldings.objects.create(**current_object)
         
-        serializer =ShownBuyAssetSerializer(inst)
+        serializer =self.response_serializer_class(inst)
         return Response(serializer.data)
 
+class RetrieveAssets(ListAPIView):
+    serializer_class = AssetSerializer
+    queryset = Assets.objects.all()
+    
+class RetrieveSpecificAsset(RetrieveAPIView):
+    serializer_class = AssetSerializer
+    queryset = Assets.objects.all()
+
+
+
+class PortfolioInformation(GenericAPIView):
+    serializer_class = PortfolioSerializer
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer()
+        return Response(serializer.data)
