@@ -5,7 +5,7 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Assets
-from .business_logic import update_latest_price, order_queue
+from .business_logic import *
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 
@@ -82,10 +82,67 @@ class RetrieveSpecificAsset(RetrieveAPIView):
     serializer_class = AssetSerializer
     queryset = Assets.objects.all()
 
-
-
 class PortfolioInformation(GenericAPIView):
     serializer_class = PortfolioSerializer
+
     def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer()
+        asset_type = request.query_params.get('asset_type', None)
+        holding_type= request.query_params.get('holding_type', None)
+
+        if holding_type != None and asset_type == None:
+            raise ValidationError({"message":"holding type cannot be defined alone, either define it with asset_type or do not."})
+        
+        user_order_queue = order_queue(request.user)
+                
+        if holding_type == None and asset_type != None :
+            if asset_type == "equity":
+                data_object = {
+                **holdings_calculator(user_order_queue[0], "equity"),
+                "stock": holdings_calculator(user_order_queue[0], "equity", "stock"),
+                "mutual_fund": holdings_calculator(user_order_queue[0], "equity", "mutual_fund"),
+                }
+
+                serializer = EquityAssetSerializer(data=data_object)
+                
+            elif asset_type == "debt":
+                data_object = {
+                **holdings_calculator(user_order_queue[0], "debt"),
+                "mutual_fund": holdings_calculator(user_order_queue[0], "debt", "mutual_fund"),
+                }
+                serializer = DebtAssetSerializer(data=data_object)
+            elif asset_type == "real_estate":
+                data_object = {
+                **holdings_calculator(user_order_queue[0], "real_estate"),
+                "land": holdings_calculator(user_order_queue[0], "real_estate", "land"),
+                "property": holdings_calculator(user_order_queue[0], "real_estate", "property"),
+                "others": holdings_calculator(user_order_queue[0], "real_estate", "others")
+                }
+                serializer = RealEstateAssetSerializer(data=data_object)
+            elif asset_type == "gold":
+                data_object = {
+                **holdings_calculator(user_order_queue[0], "gold"),
+                "etf": holdings_calculator(user_order_queue[0], "gold", "etf"),
+                "mutual_fund": holdings_calculator(user_order_queue[0], "gold", "mutual_fund"),
+                "digital_gold": holdings_calculator(user_order_queue[0], "gold", "digital_gold")
+                }
+                serializer = GoldAssetSerializer(data=data_object)
+    
+        elif holding_type != None and asset_type != None:
+            # Get some logic here.
+            pass
+
+
+        else:
+            data_object = {
+            **holdings_calculator(user_order_queue[0]),
+            "equity": holdings_calculator(user_order_queue[0], "equity"),
+            "debt": holdings_calculator(user_order_queue[0], "debt"),
+            "real_estate": holdings_calculator(user_order_queue[0], "real_estate"),
+            "gold": holdings_calculator(user_order_queue[0], "gold"),
+            }
+            serializer = PortfolioSerializer(data=data_object)
+
+
+
+        serializer.is_valid(raise_exception=True)
         return Response(serializer.data)

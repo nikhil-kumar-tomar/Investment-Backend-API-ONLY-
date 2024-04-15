@@ -52,6 +52,9 @@ class DebtAssetSerializer(BaseAssetSerializer):
     pass
 
 class RealEstateAssetSerializer(BaseAssetSerializer):
+    land = BaseAssetSerializer()
+    property = BaseAssetSerializer()
+    others = BaseAssetSerializer()
     pass
 
 class GoldAssetSerializer(BaseAssetSerializer):
