@@ -5,7 +5,7 @@ urlpatterns = [
     path('login/', Login.as_view()),
     path('update_specific/<int:pk>', UpdateSpecificCurrentPrice.as_view()),
     path('update_all/', UpdateAllCurrentPrices.as_view()),
-    path("buy_asset/", BuySellAsset.as_view()),
+    path("asset_action/", BuySellAsset.as_view()),
     path("user/<int:pk>",RetrieveUpdateDestroyUserView.as_view()),
     path("assets/",RetrieveAssets.as_view()),
     path("asset/<int:pk>",RetrieveSpecificAsset.as_view()),

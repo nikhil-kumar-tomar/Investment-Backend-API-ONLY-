@@ -144,5 +144,5 @@ class PortfolioInformation(GenericAPIView):
 
 
 
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid()
         return Response(serializer.data)
