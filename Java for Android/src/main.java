@@ -8,10 +8,9 @@ class main
     public static void main(String args[])
     {
         JsonObject user1 = new JsonObject();
-        // user1.addProperty("username", "admin");
-        // user1.addProperty("password", "123456789");
-        user1.addProperty("username","nikhil931");
-        user1.addProperty("password","Nikhil@931");
+        
+        user1.addProperty("username","");
+        user1.addProperty("password","");
         // JsonObject share_buy = new JsonObject();
         // share_buy.addProperty("action","sell");
         // share_buy.addProperty("asset",1);
