@@ -20,6 +20,7 @@ public class api
         String credentials = User.get("username").getAsString() + ":" + User.get("password").getAsString();
         String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedCredentials;
+        System.out.println(authHeaderValue);
 
         return authHeaderValue;
     }

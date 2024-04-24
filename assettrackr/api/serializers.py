@@ -45,17 +45,16 @@ class BaseAssetSerializer(serializers.Serializer):
 
 
 class EquityAssetSerializer(BaseAssetSerializer):
-    stocks = BaseAssetSerializer()
-    mutual_funds = BaseAssetSerializer()
+    stock = BaseAssetSerializer()
+    mutual_fund = BaseAssetSerializer()
 
 class DebtAssetSerializer(BaseAssetSerializer):
-    pass
+    mutual_fund = BaseAssetSerializer()
 
 class RealEstateAssetSerializer(BaseAssetSerializer):
     land = BaseAssetSerializer()
     property = BaseAssetSerializer()
     others = BaseAssetSerializer()
-    pass
 
 class GoldAssetSerializer(BaseAssetSerializer):
     pass
