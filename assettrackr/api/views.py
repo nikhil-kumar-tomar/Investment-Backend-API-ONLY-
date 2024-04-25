@@ -19,8 +19,9 @@ class UserSignUpView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         inst = None
         if serializer.is_valid():
-            inst = User.objects.create_user(**serializer.data)
-        
+            validated_data = serializer.validated_data
+            password = validated_data.pop('password')
+            inst = User.objects.create_user(**validated_data, password=password) 
         return Response(self.get_serializer(instance = inst).data if inst != None else {"error":serializer.errors}, 
                         status=status.HTTP_201_CREATED)
         

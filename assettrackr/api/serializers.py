@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.exceptions import ValidationError
 from .models import *
+from django.conf import settings
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -10,11 +11,15 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = "__all__"
 
-    def validate_password(self, value):
-        validate_password(value)
-        return value
-    
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        password = attrs.get('password')
+        try:
+            validate_password(password=password, user=self.instance)
+        except Exception as e:
+            raise ValidationError({"password":e.messages})
 
+        return attrs
 class BuySellAssetSerializer(serializers.Serializer):
     action = serializers.CharField()
     quantity = serializers.IntegerField()
