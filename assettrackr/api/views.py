@@ -129,9 +129,9 @@ class PortfolioInformation(GenericAPIView):
                 serializer = GoldAssetSerializer(data=data_object)
     
         elif holding_type != None and asset_type != None:
-            # Get some logic here.
-            pass
-
+            data_objects = []
+            data_objects.extend(individual_object_creator(user_order_queue[0], asset_type, holding_type))
+            serializer = StockSerializer(data = data_objects, many = True)
 
         else:
             data_object = {

@@ -1,5 +1,6 @@
 import requests
 from django.conf import settings
+from .models import UserHoldings
 
 def url_builder(stock:bool, obj, latest:bool):
     if latest:
@@ -98,3 +99,37 @@ def holdings_calculator(order_queue:list[list], asset_type = None, holding_type 
         returns_object["returns_percentage"] = round((returns_object["returns_value"] / returns_object["invested"])*100 , 2)
 
     return returns_object
+
+
+def individual_holding_object(holding: UserHoldings):
+    data_object = {
+        "invested": 0,
+        "returns_value": 0,
+        "current_value": 0, 
+        "returns_percentage": 0
+
+    }
+
+    data_object["invested"] += round(holding.price * holding.quantity, 2)
+    data_object["current_value"] += round(holding.asset.current_price * holding.quantity, 2)
+
+    data_object["returns_value"] = round(data_object["current_value"] - data_object["invested"], 2)
+    data_object["returns_percentage"] = round((data_object["returns_value"] / data_object["invested"])*100 , 2)
+
+    return data_object
+
+def individual_object_creator(order_queue : list, asset_type = None, holding_type = None):
+    
+    data_objects = []
+    for holding_and_quantity in order_queue:
+        if holding_and_quantity[0].asset.asset_type == asset_type and holding_and_quantity[0].asset.holding_type == holding_type:
+            data_object = {
+                "id":holding_and_quantity[0].asset_id,
+                "show_name":holding_and_quantity[0].asset.show_name,
+                "quantity":holding_and_quantity[1],
+                **individual_holding_object(holding_and_quantity[0])
+            }
+            data_objects.append(data_object)
+
+    
+    return data_objects

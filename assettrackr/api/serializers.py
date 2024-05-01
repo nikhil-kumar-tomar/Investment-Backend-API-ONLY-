@@ -62,10 +62,13 @@ class RealEstateAssetSerializer(BaseAssetSerializer):
     others = BaseAssetSerializer()
 
 class GoldAssetSerializer(BaseAssetSerializer):
-    pass
+    etf = BaseAssetSerializer()
 
 class StockSerializer(BaseAssetSerializer):
-    pass
+    id = serializers.IntegerField()
+    show_name = serializers.CharField(max_length = 500)
+    quantity = serializers.IntegerField()
+    
 
 class MutualFundSerializer(BaseAssetSerializer):
     pass
