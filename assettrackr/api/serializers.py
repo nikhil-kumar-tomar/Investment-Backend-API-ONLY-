@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework.exceptions import ValidationError
 from .models import *
 from django.conf import settings
-from .business_logic import order_queue
+from .business_logic import order_queue, individual_holding_object
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -39,14 +39,22 @@ class BuySellOutputAssetSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class AssetSerializer(serializers.ModelSerializer):
-    quantity = serializers.SerializerMethodField()
+    user_information = serializers.SerializerMethodField()
     class Meta:
         model = Assets
-        fields = ['id', 'show_name', 'asset_type', 'holding_type','current_price','quantity']
+        fields = ['id', 'show_name', 'asset_type', 'holding_type','current_price','user_information']
 
-    def get_quantity(self, obj):
+    def get_user_information(self, obj):
         total_queue = order_queue(self.context["request"].user, obj)
-        return total_queue[1]
+
+        if total_queue[0]:
+            returns_object = individual_holding_object(total_queue[0][0][0])
+        else:
+            returns_object = individual_holding_object(None)
+
+        returns_object["quantity"] = total_queue[1]
+        return returns_object
+    
     
 class BaseAssetSerializer(serializers.Serializer):
     invested = serializers.DecimalField(max_digits=100, decimal_places=2)

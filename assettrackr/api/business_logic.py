@@ -109,12 +109,12 @@ def individual_holding_object(holding: UserHoldings):
         "returns_percentage": 0
 
     }
+    if holding:
+        data_object["invested"] += round(holding.price * holding.quantity, 2)
+        data_object["current_value"] += round(holding.asset.current_price * holding.quantity, 2)
 
-    data_object["invested"] += round(holding.price * holding.quantity, 2)
-    data_object["current_value"] += round(holding.asset.current_price * holding.quantity, 2)
-
-    data_object["returns_value"] = round(data_object["current_value"] - data_object["invested"], 2)
-    data_object["returns_percentage"] = round((data_object["returns_value"] / data_object["invested"])*100 , 2)
+        data_object["returns_value"] = round(data_object["current_value"] - data_object["invested"], 2)
+        data_object["returns_percentage"] = round((data_object["returns_value"] / data_object["invested"])*100 , 2)
 
     return data_object
 
@@ -130,6 +130,22 @@ def individual_object_creator(order_queue : list, asset_type = None, holding_typ
                 **individual_holding_object(holding_and_quantity[0])
             }
             data_objects.append(data_object)
-
     
-    return data_objects
+    to_delete = set()
+    for i in range(0, len(data_objects)):
+        if i not in to_delete:
+            for j in range(i+1, len(data_objects)):
+                if data_objects[i]["id"] == data_objects[j]["id"]:
+                    data_objects[i]["invested"] = round(data_objects[i]["invested"] + data_objects[j]["invested"], 2)
+                    data_objects[i]["returns_value"] = round(data_objects[i]["returns_value"] + data_objects[j]["returns_value"], 2)
+                    data_objects[i]["returns_percentage"] = round((data_objects[i]["returns_value"] / data_objects[i]["invested"]) * 100, 2)
+                    data_objects[i]["quantity"] += data_objects[j]["quantity"]
+                    to_delete.add(j)
+
+    new_data_objects = []
+    for l in range(len(data_objects)):
+        if l not in to_delete:
+            new_data_objects.append(data_objects[l])
+
+        
+    return new_data_objects
