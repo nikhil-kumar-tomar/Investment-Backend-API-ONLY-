@@ -77,7 +77,20 @@ class BuySellAsset(CreateAPIView):
 
 class RetrieveAssets(ListAPIView):
     serializer_class = AssetSerializer
-    queryset = Assets.objects.all()
+
+    def get_queryset(self):
+        queryset = Assets.objects.all()
+
+        asset_type = self.request.query_params.get('asset_type')
+        holding_type = self.request.query_params.get('holding_type')
+
+        if asset_type:
+            queryset = queryset.filter(asset_type=asset_type)
+        if holding_type:
+            queryset = queryset.filter(holding_type=holding_type)
+
+        return queryset
+
     
 class RetrieveSpecificAsset(RetrieveAPIView):
     serializer_class = AssetSerializer
