@@ -68,23 +68,21 @@ def order_queue(user:object, asset=None):
 
             i = 0
             while sell_quantity != 0 and i < len(queue):
-                if queue[i][0].asset_id == holding.asset_id:
+                if i not in to_delete and queue[i][0].asset_id == holding.asset_id:
                     if queue[i][1] - sell_quantity <= 0:
                         sell_quantity = abs(queue[i][1] - sell_quantity)
                         to_delete.add(i)
                     else:
                         queue[i][1] -= sell_quantity 
                         sell_quantity = 0
-
                 i+=1
-            
+    
     new_queue = []
 
     for i in range(len(queue)):
         if i not in to_delete:
             new_queue.append(queue[i])
 
-                    
     return [new_queue, quantity]
 
 def holdings_calculator(order_queue:list[list], asset_type = None, holding_type = None):
