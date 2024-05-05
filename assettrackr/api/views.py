@@ -161,7 +161,6 @@ class PortfolioInformation(GenericAPIView):
             data_object["stocks"] = data_objects
             serializer = UserStockSerializer(data = data_object)
             
-
         else:
             data_object = {
             **holdings_calculator(user_order_queue[0]),

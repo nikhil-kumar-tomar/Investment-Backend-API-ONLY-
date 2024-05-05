@@ -48,9 +48,9 @@ class AssetSerializer(serializers.ModelSerializer):
         total_queue = order_queue(self.context["request"].user, obj)
 
         if total_queue[0]:
-            returns_object = individual_holding_object(total_queue[0][0][0])
+            returns_object = individual_holding_object(total_queue[0][0][0], total_queue[0][0][1])
         else:
-            returns_object = individual_holding_object(None)
+            returns_object = individual_holding_object(None, 0)
 
         returns_object["quantity"] = total_queue[1]
         return returns_object

@@ -103,7 +103,9 @@ def holdings_calculator(order_queue:list[list], asset_type = None, holding_type 
     
     elif holding_type != None and asset_type != None:
         new_queue = [[obj,quantity] for obj,quantity in order_queue if obj.asset.holding_type == holding_type and obj.asset.asset_type == asset_type]
-    
+    else:
+        new_queue = order_queue
+        
     empty = True
     for obj, quantity in new_queue:
         empty = False
