@@ -82,6 +82,9 @@ class StockSerializer(BaseAssetSerializer):
     id = serializers.IntegerField()
     show_name = serializers.CharField(max_length = 500)
     quantity = serializers.IntegerField()
+
+class UserStockSerializer(BaseAssetSerializer):
+    stocks = StockSerializer(many=True)
     
 
 class MutualFundSerializer(BaseAssetSerializer):

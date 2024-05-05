@@ -157,7 +157,10 @@ class PortfolioInformation(GenericAPIView):
         elif holding_type != None and asset_type != None:
             data_objects = []
             data_objects.extend(individual_object_creator(user_order_queue[0], asset_type, holding_type))
-            serializer = StockSerializer(data = data_objects, many = True)
+            data_object = holdings_calculator(user_order_queue[0], asset_type, holding_type)
+            data_object["stocks"] = data_objects
+            serializer = UserStockSerializer(data = data_object)
+            
 
         else:
             data_object = {

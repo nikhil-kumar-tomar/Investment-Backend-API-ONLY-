@@ -93,15 +93,19 @@ def holdings_calculator(order_queue:list[list], asset_type = None, holding_type 
         "current_value": 0, 
         "returns_percentage": 0
     }
+    new_queue = []
 
-    if asset_type != None and asset_type in ["equity", "debt", "real_estate", "gold"]:
-        order_queue = [[obj,quantity] for obj,quantity in order_queue if obj.asset.asset_type == asset_type]
+    if asset_type != None and holding_type == None:
+        new_queue = [[obj,quantity] for obj,quantity in order_queue if obj.asset.asset_type == asset_type]
     
-    if holding_type != None and holding_type in ["stock", "mutual_fund", "etf", "land", "property", "others", "digital_gold"]:
-        order_queue = [[obj,quantity] for obj,quantity in order_queue if obj.asset.holding_type == holding_type]
-
+    elif holding_type != None and asset_type == None:
+        new_queue = [[obj,quantity] for obj,quantity in order_queue if obj.asset.holding_type == holding_type]
+    
+    elif holding_type != None and asset_type != None:
+        new_queue = [[obj,quantity] for obj,quantity in order_queue if obj.asset.holding_type == holding_type and obj.asset.asset_type == asset_type]
+    
     empty = True
-    for obj, quantity in order_queue:
+    for obj, quantity in new_queue:
         empty = False
         returns_object["invested"] += round(obj.price * quantity, 2)
         returns_object["current_value"] += round(obj.asset.current_price * quantity, 2)
@@ -112,7 +116,7 @@ def holdings_calculator(order_queue:list[list], asset_type = None, holding_type 
     return returns_object
 
 
-def individual_holding_object(holding: UserHoldings):
+def individual_holding_object(holding: UserHoldings, quantity: int):
     data_object = {
         "invested": 0,
         "returns_value": 0,
@@ -121,8 +125,8 @@ def individual_holding_object(holding: UserHoldings):
 
     }
     if holding:
-        data_object["invested"] += round(holding.price * holding.quantity, 2)
-        data_object["current_value"] += round(holding.asset.current_price * holding.quantity, 2)
+        data_object["invested"] = round(holding.price * quantity, 2)
+        data_object["current_value"] = round(holding.asset.current_price * quantity, 2)
 
         data_object["returns_value"] = round(data_object["current_value"] - data_object["invested"], 2)
         data_object["returns_percentage"] = round((data_object["returns_value"] / data_object["invested"])*100 , 2)
@@ -138,16 +142,18 @@ def individual_object_creator(order_queue : list, asset_type = None, holding_typ
                 "id":holding_and_quantity[0].asset_id,
                 "show_name":holding_and_quantity[0].asset.show_name,
                 "quantity":holding_and_quantity[1],
-                **individual_holding_object(holding_and_quantity[0])
+                **individual_holding_object(holding_and_quantity[0], holding_and_quantity[1])
             }
             data_objects.append(data_object)
     
+
     to_delete = set()
     for i in range(0, len(data_objects)):
         if i not in to_delete:
             for j in range(i+1, len(data_objects)):
                 if data_objects[i]["id"] == data_objects[j]["id"]:
                     data_objects[i]["invested"] = round(data_objects[i]["invested"] + data_objects[j]["invested"], 2)
+                    data_objects[i]["current_value"] = round(data_objects[i]["current_value"] + data_objects[j]["current_value"], 2)
                     data_objects[i]["returns_value"] = round(data_objects[i]["returns_value"] + data_objects[j]["returns_value"], 2)
                     data_objects[i]["returns_percentage"] = round((data_objects[i]["returns_value"] / data_objects[i]["invested"]) * 100, 2)
                     data_objects[i]["quantity"] += data_objects[j]["quantity"]
