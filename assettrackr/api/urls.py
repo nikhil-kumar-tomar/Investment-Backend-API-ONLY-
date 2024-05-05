@@ -10,5 +10,6 @@ urlpatterns = [
     path("assets/",RetrieveAssets.as_view()),
     path("asset/<int:pk>",RetrieveSpecificAsset.as_view()),
     path("portfolio_information/", PortfolioInformation.as_view()),
+    path("update_user_prices/", UpdateAllCurrentUserPrices.as_view()),
     
 ]

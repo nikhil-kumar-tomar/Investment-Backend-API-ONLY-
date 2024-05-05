@@ -31,7 +31,13 @@ class RetrieveUpdateDestroyUserView(RetrieveUpdateDestroyAPIView):
 
 class Login(RetrieveUpdateAPIView):
     def get(self, request, *args, **kwargs):
-        return Response({"status":True, "message":"successfully logged in"}, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "status":True, 
+                "message":"successfully logged in",
+                "first_name":self.request.user.first_name,
+            }, 
+            status=status.HTTP_200_OK)
 
 class UpdateSpecificCurrentPrice(GenericAPIView):
     def get(self, request, *args, **kwargs):
@@ -45,7 +51,14 @@ class UpdateAllCurrentPrices(GenericAPIView):
         objects = self.get_queryset()
         update_latest_price(objects)
         return Response({"Status": True, "message":"Price Updated"}, status=status.HTTP_200_OK)
-        
+
+class UpdateAllCurrentUserPrices(GenericAPIView):
+    queryset = Assets.objects.all()
+    def get(self, request, *args, **kwargs):
+        all_held_assets = [x[0].asset for x in order_queue(self.request.user)[0]]
+        update_latest_price(all_held_assets)
+        return Response({"Status": True, "message":"Price Updated"}, status=status.HTTP_200_OK)
+
 
 class BuySellAsset(CreateAPIView):
     queryset = UserHoldings.objects.all()
